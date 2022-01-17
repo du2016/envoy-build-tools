@@ -54,4 +54,23 @@ fi
 
 source ./build_container_common.sh
 
+# compile proper version of gn, compatible with CentOS's GLIBC version and
+# envoy wasm/v8 dependency
+# can be removed when the dependency will be updated
+git clone https://gn.googlesource.com/gn
+pushd gn
+# 45aa842fb41d79e149b46fac8ad71728856e15b9 is a hash of the version
+# before https://gn.googlesource.com/gn/+/46b572ce4ceedfe57f4f84051bd7da624c98bf01
+# as this commit expects envoy to rely on newer version of wasm/v8 with the fix
+# from https://github.com/v8/v8/commit/eac21d572e92a82f5656379bc90f8ecf1ff884fc
+# (versions 9.5.164 - 9.6.152)
+git checkout 45aa842fb41d79e149b46fac8ad71728856e15b9
+python build/gen.py
+ninja -C out
+mv -f out/gn /usr/local/bin/gn
+chmod +x /usr/local/bin/gn
+popd
+
+
+
 yum clean all
